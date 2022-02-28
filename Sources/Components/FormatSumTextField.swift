@@ -21,7 +21,7 @@ public struct FormatSumTextField: UIViewRepresentable {
     private let placeholder: String?
     @State public var unformattedText: String = ""
     @Binding public var numberValue: NSNumber?
-    private let charactersToRemoveOnPaste: [Character]
+    private let prePasteCleaner: ((String) -> String)?
     
     // MARK: - Appearence
     
@@ -56,19 +56,19 @@ public struct FormatSumTextField: UIViewRepresentable {
         self._numberValue = numberValue
         self.placeholder = placeholder
         self.formatter = formatter
-        self.charactersToRemoveOnPaste = []
+        self.prePasteCleaner = nil
     }
     
     public init(numberValue: Binding<NSNumber?>,
                 placeholder: String? = nil,
                 textPattern: String,
                 patternSymbol: Character = "#",
-                charactersToRemoveOnPaste: [Character]
+                prePasteCleaner: ((String) -> String)? = nil
     ) {
         self._numberValue = numberValue
         self.placeholder = placeholder
         self.formatter = SumTextInputFormatter(textPattern: textPattern, patternSymbol: patternSymbol)
-        self.charactersToRemoveOnPaste = charactersToRemoveOnPaste
+        self.prePasteCleaner = prePasteCleaner
     }
     
     public init(numberValue: Binding<NSNumber?>,
@@ -78,7 +78,7 @@ public struct FormatSumTextField: UIViewRepresentable {
         self._numberValue = numberValue
         self.placeholder = placeholder
         self.formatter = SumTextInputFormatter(numberFormatter: numberFormatter)
-        self.charactersToRemoveOnPaste = []
+        self.prePasteCleaner = nil
     }
     
     // MARK: - UIViewRepresentable
@@ -136,7 +136,7 @@ public struct FormatSumTextField: UIViewRepresentable {
     public func makeCoordinator() -> Coordinator {
         let coordinator = Coordinator(number: $numberValue,
                                       unformattedText: $unformattedText,
-                                      charactersToRemoveOnPaste: charactersToRemoveOnPaste)
+                                      prePasteCleaner: prePasteCleaner)
         coordinator.onEditingBegan = onEditingBeganHandler
         coordinator.onEditingEnd = onEditingEndHandler
         coordinator.onTextChange = onTextChangeHandler
@@ -299,7 +299,7 @@ public struct FormatSumTextField: UIViewRepresentable {
         
         let number: Binding<NSNumber?>
         let unformattedText: Binding<String>
-        let charactersToRemoveOnPaste: [Character]
+        let prePasteCleaner: ((String) -> String)?
         
         var formatter: FormatterType?
         
@@ -309,18 +309,16 @@ public struct FormatSumTextField: UIViewRepresentable {
         var onClear: VoidAction?
         var onReturn: VoidAction?
         
-        init(number: Binding<NSNumber?>, unformattedText: Binding<String>, charactersToRemoveOnPaste: [Character]) {
+        init(number: Binding<NSNumber?>, unformattedText: Binding<String>, prePasteCleaner: ((String) -> String)?) {
             self.number = number
             self.unformattedText = unformattedText
-            self.charactersToRemoveOnPaste = charactersToRemoveOnPaste
+            self.prePasteCleaner = prePasteCleaner
         }
         
         public func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
             guard let formatter = formatter else { return true }
-            var cleanedString = string
-            if !charactersToRemoveOnPaste.isEmpty {
-                cleanedString = cleanedString.clean(filterOut: charactersToRemoveOnPaste)
-            }
+            var cleanedString = prePasteCleaner?(string) ?? string
+            
             let result = formatter.formatInput(
                 currentText: textField.text ?? "",
                 range: range,
