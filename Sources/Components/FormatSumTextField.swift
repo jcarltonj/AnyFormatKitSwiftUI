@@ -253,28 +253,28 @@ public struct FormatSumTextField: UIViewRepresentable {
     }
     
     // keyboardType
-    public func keyboardType(_ type: UIKeyboardType) -> Self {
+    public func keyboardTypeFormattedField(_ type: UIKeyboardType) -> Self {
         var view = self
         view.keyboardType = type
         return view
     }
     
     // textContentType
-    public func textContentType(_ type: UITextContentType?) -> Self {
+    public func textContentTypeFormattedField(_ type: UITextContentType?) -> Self {
         var view = self
         view.textContentType = type
         return view
     }
     
     // Autocorrect
-    public func disableAutocorrect(_ disable: Bool?) -> Self {
+    public func disableAutocorrectFormattedField(_ disable: Bool?) -> Self {
         var view = self
         view.disableAutocorrection = disable ?? false
         return view
     }
     
     // Autocapitalization
-    public func autocapitalizationType(_ type: UITextAutocapitalizationType) -> Self {
+    public func autocapitalizationTypeFormattedField(_ type: UITextAutocapitalizationType) -> Self {
         var view = self
         view.autoCapitalizationType = type
         return view
