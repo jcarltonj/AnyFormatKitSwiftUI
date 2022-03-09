@@ -35,6 +35,8 @@ public struct FormatStartTextField: UIViewRepresentable {
     private var textAlignment: NSTextAlignment?
     private var keyboardType: UIKeyboardType = .default
     private var textContentType: UITextContentType?
+    private var disableAutocorrection: Bool = false
+    private var autoCapitalizationType: UITextAutocapitalizationType = .sentences
     
     // MARK: - Private actions
 
@@ -84,6 +86,9 @@ public struct FormatStartTextField: UIViewRepresentable {
         uiView.tintColor = accentColor
         uiView.keyboardType = keyboardType
         uiView.textContentType = textContentType
+        uiView.autocorrectionType = disableAutocorrection ? .no : .yes
+        uiView.autocapitalizationType = autoCapitalizationType
+        
         updateUIViewTextAlignment(uiView)
     }
 
@@ -228,6 +233,20 @@ public struct FormatStartTextField: UIViewRepresentable {
     public func textContentType(_ type: UITextContentType?) -> Self {
         var view = self
         view.textContentType = type
+        return view
+    }
+    
+    // Autocorrect
+    public func disableAutocorrect(_ disable: Bool?) -> Self {
+        var view = self
+        view.disableAutocorrection = disable ?? false
+        return view
+    }
+    
+    // Autocapitalization
+    public func autocapitalizationType(_ type: UITextAutocapitalizationType) -> Self {
+        var view = self
+        view.autoCapitalizationType = type
         return view
     }
     
