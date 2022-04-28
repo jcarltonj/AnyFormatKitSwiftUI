@@ -30,6 +30,7 @@ public struct FormatTextField: UIViewRepresentable {
     private var clearButtonMode: UITextField.ViewMode = .never
     private var borderStyle: UITextField.BorderStyle = .none
     private var textAlignment: NSTextAlignment?
+    private var isSecureTextEntry: Bool = false
     private var keyboardType: UIKeyboardType = .default
     private var textContentType: UITextContentType?
     private var disableAutocorrection: Bool = false
@@ -51,10 +52,12 @@ public struct FormatTextField: UIViewRepresentable {
     
     public init(unformattedText: Binding<String>,
                 placeholder: String? = nil,
+                isSecureTextEntry: Bool = false,
                 formatter: (TextInputFormatter & TextFormatter & TextUnformatter)
     ) {
         self._unformattedText = unformattedText
         self.placeholder = placeholder
+        self.isSecureTextEntry = isSecureTextEntry
         self.formatter = formatter
         self.prePasteCleaner = nil
         
@@ -63,11 +66,13 @@ public struct FormatTextField: UIViewRepresentable {
     /// Will init with DefaultTextInputFormatter
     public init(unformattedText: Binding<String>,
                 placeholder: String? = nil,
+                isSecureTextEntry: Bool = false,
                 textPattern: String,
                 patternSymbol: Character = "#",
                 prePasteCleaner: ((String) -> String)? = nil) {
         self._unformattedText = unformattedText
         self.placeholder = placeholder
+        self.isSecureTextEntry = isSecureTextEntry
         self.formatter = DefaultTextInputFormatter(textPattern: textPattern, patternSymbol: patternSymbol)
         self.prePasteCleaner = prePasteCleaner
     }
@@ -94,6 +99,7 @@ public struct FormatTextField: UIViewRepresentable {
         uiView.clearButtonMode = clearButtonMode
         uiView.borderStyle = borderStyle
         uiView.tintColor = accentColor
+        uiView.isSecureTextEntry = isSecureTextEntry
         uiView.keyboardType = keyboardType
         uiView.textContentType = textContentType
         uiView.autocorrectionType = disableAutocorrection ? .no : .yes
