@@ -8,6 +8,53 @@
 import SwiftUI
 import AnyFormatKit
 
+extension UITextField {
+    public enum RightViewType {
+        case lock
+        case eye
+    }
+    
+    fileprivate func setPasswordToggleLockImage(_ button: UIButton) {
+        if isSecureTextEntry {
+            button.setImage(UIImage(systemName: "lock"), for: .normal)
+        } else {
+            button.setImage(UIImage(systemName: "lock.open"), for: .normal)
+        }
+    }
+    fileprivate func setPasswordToggleEyeImage(_ button: UIButton) {
+        if isSecureTextEntry {
+            button.setImage(UIImage(systemName: "eye.slash"), for: .normal)
+        } else {
+            button.setImage(UIImage(systemName: "eye"), for: .normal)
+        }
+    }
+    
+    func enablePasswordToggle(withRightViewType rightViewType: RightViewType) {
+        let button = UIButton(type: .custom)
+        switch rightViewType {
+        case .lock:
+            setPasswordToggleLockImage(button)
+            button.addTarget(self, action: #selector(self.toggleLockPasswordView(_:)), for: .touchDown)
+        case .eye:
+            setPasswordToggleEyeImage(button)
+            button.addTarget(self, action: #selector(self.toggleEyePasswordView(_:)), for: .touchDown)
+        }
+        button.imageEdgeInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: -16)
+        button.frame = CGRect(x: CGFloat(self.frame.size.width - 25), y: CGFloat(5), width: CGFloat(25), height: CGFloat(25))
+        button.tintColor = UIColor(Color("BBBBBB"))
+        self.rightView = button
+        self.rightViewMode = .always
+    }
+    @IBAction func toggleLockPasswordView(_ sender: Any) {
+        self.isSecureTextEntry = !self.isSecureTextEntry
+        setPasswordToggleLockImage(sender as! UIButton)
+    }
+    @IBAction func toggleEyePasswordView(_ sender: Any) {
+        self.isSecureTextEntry = !self.isSecureTextEntry
+        setPasswordToggleEyeImage(sender as! UIButton)
+    }
+}
+
 @available(iOS 13.0, *)
 public struct FormatTextField: UIViewRepresentable {
     
@@ -35,6 +82,7 @@ public struct FormatTextField: UIViewRepresentable {
     private var textContentType: UITextContentType?
     private var disableAutocorrection: Bool = false
     private var autoCapitalizationType: UITextAutocapitalizationType = .sentences
+    private var rightViewType: UITextField.RightViewType? = nil
     
     // MARK: - Private actions
     
@@ -46,7 +94,7 @@ public struct FormatTextField: UIViewRepresentable {
     
     // MARK: - Dependencies
     
-    private let formatter: (TextInputFormatter & TextFormatter & TextUnformatter)
+    private let formatter: (TextInputFormatter & TextFormatter & TextUnformatter)?
     
     // MARK: - Life cycle
     
@@ -77,6 +125,25 @@ public struct FormatTextField: UIViewRepresentable {
         self.prePasteCleaner = prePasteCleaner
     }
     
+    public init(unformattedText: Binding<String>,
+                placeholder: String? = nil,
+                textPattern: String? = nil,
+                patternSymbol: Character = "#",
+                prePasteCleaner: ((String) -> String)? = nil,
+                isSecureTextEntry: Bool = false,
+                rightViewType: UITextField.RightViewType? = nil) {
+        self._unformattedText = unformattedText
+        self.placeholder = placeholder
+        self.prePasteCleaner = nil
+        self.isSecureTextEntry = isSecureTextEntry
+        if let textPattern = textPattern {
+            self.formatter = DefaultTextInputFormatter(textPattern: textPattern, patternSymbol: patternSymbol)
+        } else {
+            self.formatter = nil
+        }
+        self.rightViewType = rightViewType
+    }
+    
     // MARK: - UIViewRepresentable
     
     public func makeUIView(context: Context) -> UIViewType {
@@ -89,9 +156,11 @@ public struct FormatTextField: UIViewRepresentable {
     
     public func updateUIView(_ uiView: UIViewType, context: Context) {
         context.coordinator.formatter = formatter
-        let formattedText = formatter.format(unformattedText)
-        if uiView.text != formattedText {
-            uiView.text = formattedText
+        if let formatter = formatter {
+            let formattedText = formatter.format(unformattedText)
+            if uiView.text != formattedText {
+                uiView.text = formattedText
+            }
         }
         uiView.textColor = textColor
         uiView.font = font
@@ -104,7 +173,9 @@ public struct FormatTextField: UIViewRepresentable {
         uiView.textContentType = textContentType
         uiView.autocorrectionType = disableAutocorrection ? .no : .yes
         uiView.autocapitalizationType = autoCapitalizationType
-        
+        if let rightViewType = rightViewType {
+            uiView.enablePasswordToggle(withRightViewType: rightViewType)
+        }
         updateUIViewTextAlignment(uiView)
     }
     
@@ -317,7 +388,12 @@ public struct FormatTextField: UIViewRepresentable {
         }
         
         public func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-            guard let formatter = formatter else { return true }
+            guard let formatter = formatter else {
+                if let text = textField.text {
+                    self.unformattedText?.wrappedValue = text + string
+                }
+                return true
+            }
             var cleanedString = prePasteCleaner?(string) ?? string
             let result = formatter.formatInput(
                 currentText: textField.text ?? "",
