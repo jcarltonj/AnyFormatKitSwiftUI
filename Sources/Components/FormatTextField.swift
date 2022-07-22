@@ -108,7 +108,6 @@ public struct FormatTextField: UIViewRepresentable {
         self.isSecureTextEntry = isSecureTextEntry
         self.formatter = formatter
         self.prePasteCleaner = nil
-        
     }
     
     /// Will init with DefaultTextInputFormatter
@@ -168,7 +167,10 @@ public struct FormatTextField: UIViewRepresentable {
         uiView.clearButtonMode = clearButtonMode
         uiView.borderStyle = borderStyle
         uiView.tintColor = accentColor
-        uiView.isSecureTextEntry = isSecureTextEntry
+        // Prevent isSecureTextEntry from toggling due to typing into textfield
+        if uiView.text == "" {
+            uiView.isSecureTextEntry = isSecureTextEntry
+        }
         uiView.keyboardType = keyboardType
         uiView.textContentType = textContentType
         uiView.autocorrectionType = disableAutocorrection ? .no : .yes
@@ -394,7 +396,7 @@ public struct FormatTextField: UIViewRepresentable {
                 }
                 return true
             }
-            var cleanedString = prePasteCleaner?(string) ?? string
+            let cleanedString = prePasteCleaner?(string) ?? string
             let result = formatter.formatInput(
                 currentText: textField.text ?? "",
                 range: range,
