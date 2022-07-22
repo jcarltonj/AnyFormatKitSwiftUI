@@ -31,6 +31,11 @@ extension UITextField {
     
     func enablePasswordToggle(withRightViewType rightViewType: RightViewType) {
         let button = UIButton(type: .custom)
+        var config: UIButton.Configuration = .plain()
+        config.contentInsets = NSDirectionalEdgeInsets(top: .zero, leading: .zero, bottom: .zero, trailing: -16.0)
+        button.configuration = config
+        button.frame = CGRect(x: CGFloat(self.frame.size.width - 25), y: CGFloat(5), width: CGFloat(25), height: CGFloat(25))
+        button.tintColor = UIColor(Color("BBBBBB"))
         switch rightViewType {
         case .lock:
             setPasswordToggleLockImage(button)
@@ -39,19 +44,16 @@ extension UITextField {
             setPasswordToggleEyeImage(button)
             button.addTarget(self, action: #selector(self.toggleEyePasswordView(_:)), for: .touchDown)
         }
-        button.imageEdgeInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: -16)
-        button.frame = CGRect(x: CGFloat(self.frame.size.width - 25), y: CGFloat(5), width: CGFloat(25), height: CGFloat(25))
-        button.tintColor = UIColor(Color("BBBBBB"))
         self.rightView = button
         self.rightViewMode = .always
     }
-    @IBAction func toggleLockPasswordView(_ sender: Any) {
+    @IBAction func toggleLockPasswordView(_ sender: UIButton) {
         self.isSecureTextEntry = !self.isSecureTextEntry
-        setPasswordToggleLockImage(sender as! UIButton)
+        setPasswordToggleLockImage(sender)
     }
-    @IBAction func toggleEyePasswordView(_ sender: Any) {
+    @IBAction func toggleEyePasswordView(_ sender: UIButton) {
         self.isSecureTextEntry = !self.isSecureTextEntry
-        setPasswordToggleEyeImage(sender as! UIButton)
+        setPasswordToggleEyeImage(sender)
     }
 }
 
