@@ -32,7 +32,8 @@ extension UITextField {
     func enablePasswordToggle(withRightViewType rightViewType: RightViewType) {
         let button = UIButton(type: .custom)
         var config: UIButton.Configuration = .plain()
-        config.contentInsets = NSDirectionalEdgeInsets(top: .zero, leading: .zero, bottom: .zero, trailing: -16.0)
+        config.contentInsets = NSDirectionalEdgeInsets(top: 5, leading: 5, bottom: 5, trailing: -16.0)
+        config.buttonSize = .small
         button.configuration = config
         button.frame = CGRect(x: CGFloat(self.frame.size.width - 25), y: CGFloat(5), width: CGFloat(25), height: CGFloat(25))
         button.tintColor = UIColor(Color("BBBBBB"))
