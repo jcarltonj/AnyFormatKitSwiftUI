@@ -14,47 +14,52 @@ extension UITextField {
         case eye
     }
     
-    fileprivate func setPasswordToggleLockImage(_ button: UIButton) {
+    fileprivate func setPasswordToggleLockImage(_ imageView: UIImageView) {
         if isSecureTextEntry {
-            button.setImage(UIImage(systemName: "lock"), for: .normal)
+            imageView.image = UIImage(systemName: "lock")
         } else {
-            button.setImage(UIImage(systemName: "lock.open"), for: .normal)
+            imageView.image = UIImage(systemName: "lock.open")
         }
     }
-    fileprivate func setPasswordToggleEyeImage(_ button: UIButton) {
+    fileprivate func setPasswordToggleEyeImage(_ imageView: UIImageView) {
         if isSecureTextEntry {
-            button.setImage(UIImage(systemName: "eye.slash"), for: .normal)
+            imageView.image = UIImage(systemName: "eye.slash")
         } else {
-            button.setImage(UIImage(systemName: "eye"), for: .normal)
+            imageView.image = UIImage(systemName: "eye")
         }
     }
     
     func enablePasswordToggle(withRightViewType rightViewType: RightViewType) {
-        let button = UIButton(type: .custom)
-        var config: UIButton.Configuration = .plain()
-        config.contentInsets = NSDirectionalEdgeInsets(top: 5, leading: 5, bottom: 5, trailing: -16.0)
-        config.buttonSize = .small
-        button.configuration = config
-        button.frame = CGRect(x: CGFloat(self.frame.size.width - 25), y: CGFloat(5), width: CGFloat(25), height: CGFloat(25))
-        button.tintColor = UIColor(Color("BBBBBB"))
+        let imageView = UIImageView(frame: CGRect(x: 6.0, y: 0.0, width: 50.0, height: 44.0))
+        imageView.contentMode = .right
+        imageView.isUserInteractionEnabled = true
+        
         switch rightViewType {
         case .lock:
-            setPasswordToggleLockImage(button)
-            button.addTarget(self, action: #selector(self.toggleLockPasswordView(_:)), for: .touchDown)
+            setPasswordToggleLockImage(imageView)
+            let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(toggleLockPasswordView(tapGestureRecognizer:)))
+            imageView.addGestureRecognizer(tapRecognizer)
         case .eye:
-            setPasswordToggleEyeImage(button)
-            button.addTarget(self, action: #selector(self.toggleEyePasswordView(_:)), for: .touchDown)
+            setPasswordToggleEyeImage(imageView)
+            let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(toggleEyePasswordView(tapGestureRecognizer:)))
+            imageView.addGestureRecognizer(tapRecognizer)
         }
-        self.rightView = button
+        imageView.tintColor = UIColor(Color("BBBBBB"))
+        let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 50.0, height: 44.0))
+        paddingView.addSubview(imageView)
+        paddingView.isUserInteractionEnabled = true
         self.rightViewMode = .always
+        self.rightView = paddingView
     }
-    @IBAction func toggleLockPasswordView(_ sender: UIButton) {
+    @objc func toggleLockPasswordView(tapGestureRecognizer: UITapGestureRecognizer) {
+        let tappedImage = tapGestureRecognizer.view as! UIImageView
         self.isSecureTextEntry = !self.isSecureTextEntry
-        setPasswordToggleLockImage(sender)
+        setPasswordToggleLockImage(tappedImage)
     }
-    @IBAction func toggleEyePasswordView(_ sender: UIButton) {
+    @objc func toggleEyePasswordView(tapGestureRecognizer: UITapGestureRecognizer) {
+        let tappedImage = tapGestureRecognizer.view as! UIImageView
         self.isSecureTextEntry = !self.isSecureTextEntry
-        setPasswordToggleEyeImage(sender)
+        setPasswordToggleEyeImage(tappedImage)
     }
 }
 
