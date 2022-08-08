@@ -8,61 +8,6 @@
 import SwiftUI
 import AnyFormatKit
 
-extension UITextField {
-    public enum RightViewType {
-        case lock
-        case eye
-    }
-    
-    fileprivate func setPasswordToggleLockImage(_ imageView: UIImageView) {
-        if isSecureTextEntry {
-            imageView.image = UIImage(systemName: "lock")
-        } else {
-            imageView.image = UIImage(systemName: "lock.open")
-        }
-    }
-    fileprivate func setPasswordToggleEyeImage(_ imageView: UIImageView) {
-        if isSecureTextEntry {
-            imageView.image = UIImage(systemName: "eye.slash")
-        } else {
-            imageView.image = UIImage(systemName: "eye")
-        }
-    }
-    
-    func enablePasswordToggle(withRightViewType rightViewType: RightViewType) {
-        let imageView = UIImageView(frame: CGRect(x: 6.0, y: 0.0, width: 50.0, height: 44.0))
-        imageView.contentMode = .right
-        imageView.isUserInteractionEnabled = true
-        
-        switch rightViewType {
-        case .lock:
-            setPasswordToggleLockImage(imageView)
-            let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(toggleLockPasswordView(tapGestureRecognizer:)))
-            imageView.addGestureRecognizer(tapRecognizer)
-        case .eye:
-            setPasswordToggleEyeImage(imageView)
-            let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(toggleEyePasswordView(tapGestureRecognizer:)))
-            imageView.addGestureRecognizer(tapRecognizer)
-        }
-        imageView.tintColor = UIColor(Color("BBBBBB"))
-        let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 50.0, height: 44.0))
-        paddingView.addSubview(imageView)
-        paddingView.isUserInteractionEnabled = true
-        self.rightViewMode = .always
-        self.rightView = paddingView
-    }
-    @objc func toggleLockPasswordView(tapGestureRecognizer: UITapGestureRecognizer) {
-        let tappedImage = tapGestureRecognizer.view as! UIImageView
-        self.isSecureTextEntry = !self.isSecureTextEntry
-        setPasswordToggleLockImage(tappedImage)
-    }
-    @objc func toggleEyePasswordView(tapGestureRecognizer: UITapGestureRecognizer) {
-        let tappedImage = tapGestureRecognizer.view as! UIImageView
-        self.isSecureTextEntry = !self.isSecureTextEntry
-        setPasswordToggleEyeImage(tappedImage)
-    }
-}
-
 @available(iOS 13.0, *)
 public struct FormatTextField: UIViewRepresentable {
     
@@ -90,7 +35,6 @@ public struct FormatTextField: UIViewRepresentable {
     private var textContentType: UITextContentType?
     private var disableAutocorrection: Bool = false
     private var autoCapitalizationType: UITextAutocapitalizationType = .sentences
-    private var rightViewType: UITextField.RightViewType? = nil
     
     // MARK: - Private actions
     
@@ -130,6 +74,7 @@ public struct FormatTextField: UIViewRepresentable {
         self.isSecureTextEntry = isSecureTextEntry
         self.formatter = DefaultTextInputFormatter(textPattern: textPattern, patternSymbol: patternSymbol)
         self.prePasteCleaner = prePasteCleaner
+        
     }
     
     public init(unformattedText: Binding<String>,
@@ -137,8 +82,7 @@ public struct FormatTextField: UIViewRepresentable {
                 textPattern: String? = nil,
                 patternSymbol: Character = "#",
                 prePasteCleaner: ((String) -> String)? = nil,
-                isSecureTextEntry: Bool = false,
-                rightViewType: UITextField.RightViewType? = nil) {
+                isSecureTextEntry: Bool = false) {
         self._unformattedText = unformattedText
         self.placeholder = placeholder
         self.prePasteCleaner = nil
@@ -148,7 +92,6 @@ public struct FormatTextField: UIViewRepresentable {
         } else {
             self.formatter = nil
         }
-        self.rightViewType = rightViewType
     }
     
     // MARK: - UIViewRepresentable
@@ -158,6 +101,7 @@ public struct FormatTextField: UIViewRepresentable {
         uiView.setContentHuggingPriority(.defaultHigh, for: .vertical)
         uiView.delegate = context.coordinator
         context.coordinator.formatter = formatter
+        
         return uiView
     }
     
@@ -175,17 +119,11 @@ public struct FormatTextField: UIViewRepresentable {
         uiView.clearButtonMode = clearButtonMode
         uiView.borderStyle = borderStyle
         uiView.tintColor = accentColor
-        // Prevent isSecureTextEntry from toggling due to typing into textfield
-        if uiView.text == "" {
-            uiView.isSecureTextEntry = isSecureTextEntry
-        }
+        uiView.isSecureTextEntry = isSecureTextEntry
         uiView.keyboardType = keyboardType
         uiView.textContentType = textContentType
         uiView.autocorrectionType = disableAutocorrection ? .no : .yes
         uiView.autocapitalizationType = autoCapitalizationType
-        if let rightViewType = rightViewType {
-            uiView.enablePasswordToggle(withRightViewType: rightViewType)
-        }
         updateUIViewTextAlignment(uiView)
     }
     
